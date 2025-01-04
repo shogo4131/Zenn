@@ -1,0 +1,34 @@
+name: TextLint Check
+
+on:
+  pull_request:
+    paths:
+      - "**/*.md"
+
+jobs:
+  textlint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run textlint
+        run: |
+          # 差分に含まれる md ファイルを抽出して textlint に渡す
+          git diff --name-only --diff-filter=ACMRT "${{ github.event.pull_request.base.sha }}" ${{ github.sha }} \
+            | grep '\.md$' \
+            | xargs pnpm lint:text
